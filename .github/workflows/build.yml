@@ -24,14 +24,19 @@ jobs:
         with:
           node-version: 18
 
-      - name: 4. بناء بيئة أندرويد لـ Linko
+      - name: 4. تجهيز مجلد ملفات الويب
+        run: |
+          mkdir -p www
+          cp index.html www/
+
+      - name: 5. بناء بيئة أندرويد لـ Linko
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init Linko com.linko.share --web-dir .
+          npx cap init Linko com.linko.share --web-dir www
           npx cap add android
 
-          # إضافة إذن قراءة التطبيقات في AndroidManifest تلقائياً
+          # إضافة الصلاحيات في ملف AndroidManifest تلقائياً
           sed -i '/<application/i <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n<uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' android/app/src/main/AndroidManifest.xml
 
           # بناء ملف الـ APK
@@ -39,7 +44,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: 5. استخراج ملف الـ APK وتجهيزه للتحميل
+      - name: 6. استخراج ملف الـ APK وتجهيزه للتحميل
         uses: actions/upload-artifact@v4
         with:
           name: Linko-Release-APK
