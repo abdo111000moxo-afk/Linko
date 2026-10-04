@@ -11,16 +11,16 @@ jobs:
 
     steps:
       - name: 1. تنزيل الكود
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 2. إعداد بيئة جافا
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: 3. إعداد بيئة نود
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
@@ -32,9 +32,12 @@ jobs:
       - name: 5. بناء بيئة أندرويد لـ Linko
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@5 @capacitor/cli@5 @capacitor/android@5
           npx cap init Linko com.linko.share --web-dir www
           npx cap add android
+
+          # رفع كفاءة ذاكرة Gradle ومنع تعليق الكاش
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" >> android/gradle.properties
 
           # إضافة الصلاحيات في ملف AndroidManifest تلقائياً
           sed -i '/<application/i <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n<uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' android/app/src/main/AndroidManifest.xml
@@ -42,7 +45,7 @@ jobs:
           # بناء ملف الـ APK
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
 
       - name: 6. استخراج ملف الـ APK وتجهيزه للتحميل
         uses: actions/upload-artifact@v4
