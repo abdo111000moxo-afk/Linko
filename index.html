@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Linko - لينكو</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(22, 31, 48, 0.7);
+      --neon-green: #00ffcc;
+      --neon-cyan: #38bdf8;
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --border: rgba(0, 255, 204, 0.2);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; user-select: none; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    /* Header */
+    header { background: rgba(14, 20, 33, 0.85); backdrop-filter: blur(10px); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.4rem; font-weight: 900; color: var(--neon-green); text-shadow: 0 0 10px rgba(0,255,204,0.4); display: flex; align-items: center; gap: 8px; }
+    .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: rgba(56, 189, 248, 0.15); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
+
+    /* Tabs */
+    .tabs { display: flex; background: rgba(14, 20, 33, 0.6); border-bottom: 1px solid rgba(255,255,255,0.05); overflow-x: auto; }
+    .tab-btn { flex: 1; padding: 12px 10px; background: none; border: none; color: var(--text-muted); font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: 0.3s; }
+    .tab-btn.active { color: var(--neon-green); border-bottom-color: var(--neon-green); }
+
+    /* Content Area */
+    .container { flex: 1; padding: 16px; padding-bottom: 90px; overflow-y: auto; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Grid for Apps & Files */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 12px; margin-top: 10px; }
+    .item-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+    .item-card.selected { border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0, 255, 204, 0.3); background: rgba(0, 255, 204, 0.08); }
+    .item-icon { width: 44px; height: 44px; border-radius: 10px; margin-bottom: 6px; object-fit: cover; background: #1a2233; }
+    .item-name { font-size: 0.75rem; color: #c9d1d9; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0 auto; }
+    .item-size { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Glass Panels */
+    .glass-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 16px; backdrop-filter: blur(8px); }
+    .glass-card h3 { font-size: 1rem; color: var(--neon-cyan); margin-bottom: 10px; }
+
+    /* Floating Bottom Transfer Bar */
+    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9, 13, 22, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); padding: 12px 20px; display: flex; gap: 15px; z-index: 99; }
+    .action-btn { flex: 1; padding: 14px; border: none; border-radius: 10px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+    .btn-send { background: var(--neon-green); color: #000; box-shadow: 0 0 15px rgba(0, 255, 204, 0.3); }
+    .btn-receive { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+
+    /* Progress Overlay */
+    .progress-bar-container { background: #161f30; border-radius: 8px; height: 8px; overflow: hidden; margin: 10px 0; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green)); transition: width 0.2s; }
+
+    /* Radar Pulse Simulation */
+    .radar { width: 140px; height: 140px; border-radius: 50%; border: 2px solid var(--neon-cyan); margin: 30px auto; position: relative; display: flex; align-items: center; justify-content: center; }
+    .radar::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--neon-green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">⚡ Linko</div>
+    <div class="status-badge" id="netStatus">جاهز للربط P2P</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('appsTab', this)">📱 التطبيقات</button>
+    <button class="tab-btn" onclick="showTab('filesTab', this)">📁 الملفات</button>
+    <button class="tab-btn" onclick="showTab('radarTab', this)">📡 الرادار والنقل</button>
+    <button class="tab-btn" onclick="showTab('historyTab', this)">📥 المستلمة</button>
+  </div>
+
+  <div class="container">
+    <!-- تبويب التطبيقات -->
+    <div id="appsTab" class="tab-content active">
+      <div class="glass-card">
+        <h3>قائمة التطبيقات المثبتة</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">اضغط لتحديد التطبيقات التي تريد استخراجها وإرسالها بملف APK:</p>
+      </div>
+      <div class="grid" id="appsGrid"></div>
+    </div>
+
+    <!-- تبويب الملفات -->
+    <div id="filesTab" class="tab-content">
+      <div class="glass-card">
+        <h3>اختر ملفات من الذاكرة</h3>
+        <input type="file" id="generalFileInput" multiple style="display: none;" onchange="handleSelectedFiles(event)">
+        <button class="action-btn btn-send" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('generalFileInput').click()">+ إضافة ملفات أو فيديوهات</button>
+      </div>
+      <div id="selectedFilesList" style="margin-top: 10px; font-size: 0.85rem; color: var(--neon-cyan);"></div>
+    </div>
+
+    <!-- تبويب الرادار والنقل -->
+    <div id="radarTab" class="tab-content">
+      <div class="glass-card" style="text-align: center;">
+        <h3>رادار البحث السريع</h3>
+        <div class="radar">
+          <span style="font-size: 2rem;">📡</span>
+        </div>
+        <p id="radarStatus" style="font-size: 0.85rem; color: var(--text-muted);">جاري البحث عن أجهزة قريبة...</p>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="transferProgress"></div>
+        </div>
+        <div id="speedIndicator" style="font-size: 0.75rem; color: var(--neon-green); margin-top: 5px;">السرعة: 0 MB/s</div>
+      </div>
+    </div>
+
+    <!-- تبويب السجل -->
+    <div id="historyTab" class="tab-content">
+      <div class="glass-card">
+        <h3>سجل الملفات المستلمة</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">جميع الملفات المستلمة تحفظ في ذاكرة الجهاز تلقائياً.</p>
+        <div id="historyList" style="font-size: 0.85rem; line-height: 1.8;">لا توجد ملفات مستلمة بعد.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الشريط السفلي -->
+  <div class="bottom-bar">
+    <button class="action-btn btn-send" onclick="initiateSend()">🚀 إرسال (<span id="selectedCount">0</span>)</button>
+    <button class="action-btn btn-receive" onclick="initiateReceive()">📥 استلام</button>
+  </div>
+
+  <script>
+    let selectedItems = [];
+
+    function showTab(id, btn) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // التطبيقات الافتراضية للتجربة (تستبدل بقائمة الهاتف عند تشغيل التطبيق)
+    const defaultApps = [
+      { name: "واتساب", pkg: "com.whatsapp", size: "48 MB" },
+      { name: "تليجرام", pkg: "org.telegram.messenger", size: "62 MB" },
+      { name: "فيسبوك", pkg: "com.facebook.katana", size: "85 MB" },
+      { name: "يوتيوب", pkg: "com.google.android.youtube", size: "54 MB" },
+      { name: "تيك توك", pkg: "com.zhiliaoapp.musically", size: "90 MB" },
+      { name: "إنستغرام", pkg: "com.instagram.android", size: "60 MB" }
+    ];
+
+    function loadApps() {
+      const grid = document.getElementById('appsGrid');
+      grid.innerHTML = '';
+      defaultApps.forEach((app, idx) => {
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.id = `app-${idx}`;
+        card.onclick = () => toggleSelectApp(idx, app.name);
+        card.innerHTML = `
+          <div class="item-icon" style="display:flex;align-items:center;justify-content:center;margin:0 auto 6px;color:#00ffcc;font-size:1.3rem;">⚡</div>
+          <div class="item-name">${app.name}</div>
+          <div class="item-size">${app.size}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleSelectApp(idx, name) {
+      const card = document.getElementById(`app-${idx}`);
+      const index = selectedItems.indexOf(name);
+      if (index === -1) {
+        selectedItems.push(name);
+        card.classList.add('selected');
+      } else {
+        selectedItems.splice(index, 1);
+        card.classList.remove('selected');
+      }
+      document.getElementById('selectedCount').innerText = selectedItems.length;
+    }
+
+    function handleSelectedFiles(e) {
+      const files = e.target.files;
+      const list = document.getElementById('selectedFilesList');
+      list.innerHTML = `تم تحديد <b>${files.length}</b> ملفات جاهزة للنقل`;
+      selectedItems.push(...Array.from(files).map(f => f.name));
+      document.getElementById('selectedCount').innerText = selectedItems.length;
+    }
+
+    function initiateSend() {
+      if (selectedItems.length === 0) {
+        alert("من فضلك حدد تطبيقاً أو ملفاً أولاً!");
+        return;
+      }
+      showTab('radarTab', document.querySelectorAll('.tab-btn')[2]);
+      document.getElementById('radarStatus').innerText = `جاري إرسال ${selectedItems.length} عنصر إلى الجهاز المقترن...`;
+      simulateTransfer();
+    }
+
+    function initiateReceive() {
+      showTab('radarTab', document.querySelectorAll('.tab-btn')[2]);
+      document.getElementById('radarStatus').innerText = "وضع الاستقبال نشط.. بانتظار اتصال الراسل.";
+    }
+
+    function simulateTransfer() {
+      let progress = 0;
+      const bar = document.getElementById('transferProgress');
+      const speed = document.getElementById('speedIndicator');
+      const interval = setInterval(() => {
+        progress += 5;
+        bar.style.width = progress + '%';
+        speed.innerText = `السرعة: ${(Math.random() * 15 + 20).toFixed(1)} MB/s`;
+        if (progress >= 100) {
+          clearInterval(interval);
+          speed.innerText = "اكتمل النقل بنجاح! ⚡";
+          document.getElementById('historyList').innerHTML = selectedItems.map(item => `✅ ${item} (تم الحفظ)`).join('<br>');
+          selectedItems = [];
+          document.getElementById('selectedCount').innerText = "0";
+          document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+        }
+      }, 150);
+    }
+
+    window.onload = loadApps;
+  </script>
+</body>
+</html>
