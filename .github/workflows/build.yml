@@ -36,13 +36,10 @@ jobs:
           npx cap init Linko com.linko.share --web-dir www
           npx cap add android
 
-          # رفع كفاءة ذاكرة Gradle ومنع تعليق الكاش
           echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" >> android/gradle.properties
 
-          # إضافة الصلاحيات في ملف AndroidManifest تلقائياً
-          sed -i '/<application/i <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n<uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />' android/app/src/main/AndroidManifest.xml
+          sed -i '/<application/i <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />\n<uses-permission android:name="android.permission.INTERNET" />\n<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />' android/app/src/main/AndroidManifest.xml
 
-          # بناء ملف الـ APK
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
